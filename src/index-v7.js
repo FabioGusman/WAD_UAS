@@ -2,21 +2,40 @@
 // Shop API — versi Prisma 7
 //
 // PERBEDAAN dari index.js (Prisma 5):
-//   - Import PrismaClient BUKAN dari "@prisma/client"
-//   - Import dari path output yang didefinisikan di schema-v7.prisma
+//   1. Import PrismaClient dari './generated/prisma', bukan '@prisma/client'
+//   2. Driver adapter wajib dipakai — Prisma 7 tidak bisa konek DB tanpa adapter
+//   3. PrismaClient menerima { adapter } sebagai argument
 //
-// Cara pakai:
-//   1. Copy schema-v7.prisma ke schema.prisma (atau jalankan dengan --schema)
-//   2. npx prisma generate --schema=prisma/schema-v7.prisma
-//   3. node src/index-v7.js
+// Setup:
+//   npm install @prisma/adapter-mariadb
+//   npx prisma generate --schema=prisma/schema-v7.prisma
+//   node src/index-v7.js
 
 const express = require("express");
 
-// ↓ INI YANG BERUBAH di Prisma 7 — bukan dari "@prisma/client" lagi
+// ↓ Prisma 7: import dari generated path
 const { PrismaClient } = require("./generated/prisma");
 
+// ↓ Prisma 7: driver adapter wajib — pakai mariadb adapter untuk MySQL
+const { PrismaMariaDb } = require("@prisma/adapter-mariadb");
+
+// Parse DATABASE_URL supaya adapter bisa pakai env yang sama
+// Format: mysql://user:password@host:3306/database
+const dbUrl = new URL(process.env.DATABASE_URL);
+
+const adapter = new PrismaMariaDb({
+  host:            dbUrl.hostname,
+  port:            parseInt(dbUrl.port || "3306"),
+  user:            dbUrl.username,
+  password:        dbUrl.password,
+  database:        dbUrl.pathname.slice(1), // hapus "/" di depan
+  connectionLimit: 5,
+});
+
+// ↓ Prisma 7: adapter dipass ke constructor
+const prisma = new PrismaClient({ adapter });
+
 const app = express();
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
@@ -30,9 +49,7 @@ app.get("/categories", async (req, res) => {
     const categories = await prisma.category.findMany({
       orderBy: { name: "asc" },
       include: {
-        _count: {
-          select: { products: true },
-        },
+        _count: { select: { products: true } },
       },
     });
     res.json(categories);
@@ -48,9 +65,7 @@ app.get("/categories/:id", async (req, res) => {
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
-        products: {
-          orderBy: { createdAt: "desc" },
-        },
+        products: { orderBy: { createdAt: "desc" } },
       },
     });
 
@@ -111,9 +126,7 @@ app.get("/products", async (req, res) => {
   try {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
-      include: {
-        category: true,
-      },
+      include: { category: true },
     });
     res.json(products);
   } catch (e) {

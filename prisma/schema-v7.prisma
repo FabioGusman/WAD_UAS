@@ -2,9 +2,9 @@
 // Versi Prisma 7
 //
 // PERBEDAAN dari schema.prisma (Prisma 5):
-//   - generator client sekarang WAJIB punya "output"
-//   - @prisma/client tidak lagi jadi sumber PrismaClient secara default
-//   - Import di kode harus dari path output ini: require('./generated/prisma')
+//   - generator: output WAJIB ditentukan, client tidak lagi di node_modules
+//   - datasource: url DIHAPUS dari sini, dipindah ke prisma.config.js
+//   - Import di kode: require('./generated/prisma'), bukan '@prisma/client'
 
 generator client {
   provider = "prisma-client-js"
@@ -13,7 +13,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  // ↑ url TIDAK ADA di sini — sudah dipindah ke prisma.config.js
 }
 
 // ── Tabel 1: Category ────────────────────────────────────────
