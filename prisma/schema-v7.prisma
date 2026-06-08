@@ -1,0 +1,39 @@
+// prisma/schema-v7.prisma
+// Versi Prisma 7
+//
+// PERBEDAAN dari schema.prisma (Prisma 5):
+//   - generator client sekarang WAJIB punya "output"
+//   - @prisma/client tidak lagi jadi sumber PrismaClient secara default
+//   - Import di kode harus dari path output ini: require('./generated/prisma')
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"   // ← WAJIB di Prisma 7
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Tabel 1: Category ────────────────────────────────────────
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+
+  products  Product[]
+}
+
+// ── Tabel 2: Product ─────────────────────────────────────────
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+}
