@@ -1,0 +1,43 @@
+// prisma/schema.prisma
+// Web Advanced Development — P6
+// Shop API: Category (1) → Products (many)
+//
+// Konsep relasi yang dipakai:
+//   - Satu Category bisa punya banyak Product
+//   - Setiap Product wajib punya satu Category
+//   - Di Prisma: foreign key disimpan di sisi "many" (Product.categoryId)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // Ganti ke "mysql" kalau pakai MySQL
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Tabel 1: Category ────────────────────────────────────────
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique          // nama unik, misal "Electronics"
+  createdAt DateTime  @default(now())
+
+  // Relasi: satu Category punya banyak Product
+  // "products" bukan kolom di DB — ini cuma pointer di Prisma
+  products  Product[]
+}
+
+// ── Tabel 2: Product ─────────────────────────────────────────
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String                   // nama produk
+  price       Float                    // harga
+  stock       Int      @default(0)     // stok
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Foreign key — ini yang disimpan di tabel products di DB
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+}
