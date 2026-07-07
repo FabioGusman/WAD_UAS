@@ -27,9 +27,7 @@ npm install
 
 Buat file `.env` di root folder `backend/` Anda dan tambahkan `DATABASE_URL` untuk koneksi MySQL WSL Anda serta `JWT_SECRET` untuk keamanan token:
 ```env
-DATABASE_URL="mysql://root:Bi3214@127.0.0.1:3307/shop_api_db"
-JWT_SECRET="supersecretgymkey123"
-```
+
 *Penting: File `.env` ini telah dikonfigurasi di dalam `.gitignore` agar tidak ter-commit ke kontrol versi.*
 
 ### 4. Sinkronisasi Database
