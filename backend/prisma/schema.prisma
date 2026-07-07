@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+// Skema Prisma 5 untuk aplikasi gym dan log berat badan
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+// ── Tabel 1: User ────────────────────────────────────────────
+model User {
+  id          Int          @id @default(autoincrement())
+  username    String       @unique
+  email       String       @unique
+  password    String
+  createdAt   DateTime     @default(now())
+  
+  workoutDays WorkoutDay[]
+  weightLogs  WeightLog[]
+}
+
+// ── Tabel 2: WorkoutDay ──────────────────────────────────────
+model WorkoutDay {
+  id        Int        @id @default(autoincrement())
+  dayName   String     // contoh: Push Day, Pull Day, Leg Day
+  createdAt DateTime   @default(now())
+  
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  exercises Exercise[]
+}
+
+// ── Tabel 3: Exercise ────────────────────────────────────────
+model Exercise {
+  id           Int        @id @default(autoincrement())
+  exerciseName String
+  sets         Int
+  reps         Int
+  weightKg     Float
+  createdAt    DateTime   @default(now())
+  
+  workoutDayId Int
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+}
+
+// ── Tabel 4: WeightLog ───────────────────────────────────────
+model WeightLog {
+  id        Int      @id @default(autoincrement())
+  weight    Float
+  logDate   DateTime @default(now())
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
