@@ -111,6 +111,24 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+// 3. Lihat Semua User (Kebutuhan Pengujian/Admin)
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true
+      },
+      orderBy: { id: "asc" }
+    });
+    res.json(users);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ════════════════════════════════════════════════════════════
 //  WORKOUT DAYS ENDPOINTS (BR-1)
 // ════════════════════════════════════════════════════════════
